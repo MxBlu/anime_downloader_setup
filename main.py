@@ -14,8 +14,13 @@ catchup_f = "{:s} - Catchup"
 
 def load_config():
     global config
-    with open("config.json", 'r') as f:
-        config = json.load(f)
+    try:
+        with open("config.json", 'r') as f:
+            config = json.load(f)
+    except IOError as e:
+        if e.errno == 2:
+            pass
+        raise e
 
 def save_config():
     with open("config.json", 'w') as f:
