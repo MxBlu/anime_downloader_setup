@@ -32,7 +32,7 @@ def add_rss_feed(config_path, feed_name, feed_url):
     with open(config_path + FEED_PATH, 'w') as f:
         json.dump(rss_conf, f, indent=4)
 
-def add_download_rule(config_path, rule_name, category_name, download_path, feed_url, search_term):
+def add_download_rule(config_path, rule_name, category_name, download_path, feed_urls, search_term):
     with open(config_path + DL_PATH, 'r') as f:
         download_conf = json.load(f)
 
@@ -41,7 +41,7 @@ def add_download_rule(config_path, rule_name, category_name, download_path, feed
 
     download_conf[rule_name] = {
         "addPaused": None,
-        "affectedFeeds": [ feed_url ],
+        "affectedFeeds": feed_urls,
         "assignedCategory": category_name,
         "createSubfolder": None,
         "enabled": True,

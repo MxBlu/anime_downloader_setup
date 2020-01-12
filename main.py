@@ -68,10 +68,8 @@ def handle_anime(anime):
     download_path = download_path_f.format(config['download_path'], anime, subber['subber'])
     
     qbittorrent.add_rss_feed(config['config_path'], subber['subber'], subber_rss)
-    qbittorrent.add_download_rule(config['config_path'], anime, anime, download_path, subber_rss, search_res)
-    
     qbittorrent.add_rss_feed(config['config_path'], catchup_f.format(anime), catchup_rss)
-    qbittorrent.add_download_rule(config['config_path'], catchup_f.format(anime), anime, download_path, catchup_rss, search_res)
+    qbittorrent.add_download_rule(config['config_path'], anime, anime, download_path, [ subber_rss, catchup_rss ], search_res)
 
 def main():
     init_config()
