@@ -52,7 +52,7 @@ def handle_subber(search_term):
     subber_k = input_or("Choose subber", list(subbers.keys())[0])
     if subber_k not in subbers:
         raise Exception('Invalid subber')
-    subber =  subbers[subber_k]
+    return subbers[subber_k]
 
 def handle_anime(anime):
     search_term = input_or("Enter search term", anime.split()[0])
