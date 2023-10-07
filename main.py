@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
-import sys, os, errno, atexit
+import os, errno, atexit
 import json
 
 import nyaa
-import qbittorrent
+from qbittorrent_api import QBittorrent
 from helper import *
 
 config = {}
+qbt = None
 
 download_path_f = "{:s}/{:s} [{:s}]"
 catchup_f = "{:s} - Catchup"
@@ -30,15 +31,22 @@ def save_config():
 atexit.register(save_config)
 
 def init_config():
+    global qbt
     load_config()
 
-    if 'config_path' not in config:
-        config['config_path'] = os.path.expandvars(input("Enter qBittorrent config path: "))
     if 'download_path' not in config:
         config['download_path'] = os.path.expandvars(input("Enter download path: "))
-    if qbittorrent.check_lock(config['config_path']):
-        print("Please close qBittorrent")
-        sys.exit(1)
+    if 'qbt_url' not in config:
+        config['qbt_url'] = input("Enter qBittorrent WebUI URL: ")
+    if 'qbt_username' not in config:
+        config['qbt_username'] = input("Enter qBittorrent WebUI username: ")
+    if 'qbt_password' not in config:
+        config['qbt_password'] = input("Enter qBittorrent WebUI password: ")
+
+    qbt = QBittorrent(config['qbt_url'])
+    if not qbt.login(config['qbt_username'], config['qbt_password']):
+        print("qBittorrent login failed")
+        exit(1)
 
 def handle_subber(search_term):
     torrents = nyaa.search(search_term)
@@ -67,9 +75,17 @@ def handle_anime(anime):
 
     download_path = download_path_f.format(config['download_path'], anime, subber['subber'])
     
-    qbittorrent.add_rss_feed(config['config_path'], subber['subber'], subber_rss)
-    qbittorrent.add_rss_feed(config['config_path'], catchup_f.format(anime), catchup_rss)
-    qbittorrent.add_download_rule(config['config_path'], anime, anime, download_path, [ subber_rss, catchup_rss ], search_res)
+    # Add RSS Feeds
+    qbt.add_feed(subber['subber'], subber_rss)
+    qbt.add_feed(catchup_f.format(anime), catchup_rss)
+
+    # Check if download rule exists
+    # If not, add the rule
+    rules = qbt.get_download_rules()
+    if anime not in rules:
+        qbt.add_download_rule(anime, anime, download_path, [ subber_rss, catchup_rss ], search_res)
+    else:
+        print("Download rule already exists for anime")
 
 def main():
     init_config()
