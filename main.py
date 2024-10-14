@@ -76,14 +76,21 @@ def handle_anime(anime):
     download_path = download_path_f.format(config['download_path'], anime, subber['subber'])
     
     # Add RSS Feeds
+    feeds = []
     qbt.add_feed(subber['subber'], subber_rss)
-    qbt.add_feed(catchup_f.format(anime), catchup_rss)
+    feeds.append(subber_rss)
+
+    # Optionally add a catch up RSS feed
+    should_catchup = input_or("Catch-up on past episodes?", "Y") == "Y"
+    if should_catchup:
+        qbt.add_feed(catchup_f.format(anime), catchup_rss)
+        feeds.append(catchup_rss)
 
     # Check if download rule exists
     # If not, add the rule
     rules = qbt.get_download_rules()
     if anime not in rules:
-        qbt.add_download_rule(anime, anime, download_path, [ subber_rss, catchup_rss ], search_res)
+        qbt.add_download_rule(anime, anime, download_path, feeds, search_res)
     else:
         print("Download rule already exists for anime")
 
